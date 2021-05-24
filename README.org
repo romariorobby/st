@@ -1,0 +1,13 @@
+* Patches
+- [ ] Anysize
+- [ ] Xresources
+- [ ] Font2
+- [ ] Blinking Cursor
+- [ ] Bold is not bright
+- [ ] Dynamic Cursor Color
+- [ ] Hide Cursor
+- [ ] New Term
+- [ ] Externalpipe
+- [ ] Vertcenter
+- [ ] Scrollback
+- [ ] Boxdraw
