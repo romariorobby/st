@@ -1,6 +1,6 @@
 * Patches
 - [X] Anysize
-- [ ] Xresources
+- [X] Xresources
 - [ ] Font2
 - [ ] Blinking Cursor
 - [ ] Bold is not bright
