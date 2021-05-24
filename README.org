@@ -1,5 +1,5 @@
 * Patches
-- [ ] Anysize
+- [X] Anysize
 - [ ] Xresources
 - [ ] Font2
 - [ ] Blinking Cursor
