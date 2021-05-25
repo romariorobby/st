@@ -4,3 +4,6 @@
 #if XRESOURCES_PATCH
 #include "xresources.c"
 #endif
+#if BOXDRAW_PATCH
+#include "boxdraw.c"
+#endif

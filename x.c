@@ -19,6 +19,9 @@ char *argv0;
 #include "arg.h"
 #include "st.h"
 #include "win.h"
+#if LIGATURES_PATCH
+#include "hb.h"
+#endif // LIGATURES_PATCH
 
 /* types used in config.h */
 typedef struct {
@@ -1081,6 +1084,10 @@ xloadfonts(const char *fontstr, double fontsize)
 void
 xunloadfont(Font *f)
 {
+	#if LIGATURES_PATCH
+	/* Clear Harfbuzz font cache. */
+	hbunloadfonts();
+	#endif // LIGATURES_PATCH
 	XftFontClose(xw.dpy, f->match);
 	FcPatternDestroy(f->pattern);
 	if (f->set)
@@ -1274,6 +1281,10 @@ xinit(int cols, int rows)
 	xsel.xtarget = XInternAtom(xw.dpy, "UTF8_STRING", 0);
 	if (xsel.xtarget == None)
 		xsel.xtarget = XA_STRING;
+
+	#if BOXDRAW_PATCH
+	boxdraw_xinit(xw.dpy, xw.cmap, xw.draw, xw.vis);
+	#endif // BOXDRAW_PATCH
 }
 
 int
@@ -1302,7 +1313,11 @@ xmakeglyphfontspecs(XftGlyphFontSpec *specs, const Glyph *glyphs, int len, int x
 		mode = glyphs[i].mode;
 
 		/* Skip dummy wide-character spacing. */
+		#if LIGATURES_PATCH
+		if (mode & ATTR_WDUMMY)
+		#else
 		if (mode == ATTR_WDUMMY)
+		#endif // LIGATURES_PATCH
 			continue;
 
 		/* Determine font for glyph if different from previous glyph. */
@@ -1324,8 +1339,18 @@ xmakeglyphfontspecs(XftGlyphFontSpec *specs, const Glyph *glyphs, int len, int x
 			yp = winy + font->ascent;
 		}
 
+		#if BOXDRAW_PATCH
+		if (mode & ATTR_BOXDRAW) {
+			/* minor shoehorning: boxdraw uses only this ushort */
+			glyphidx = boxdrawindex(&glyphs[i]);
+		} else {
+			/* Lookup character index with default font. */
+			glyphidx = XftCharIndex(xw.dpy, font->match, rune);
+		}
+		#else
 		/* Lookup character index with default font. */
 		glyphidx = XftCharIndex(xw.dpy, font->match, rune);
+		#endif // BOXDRAW_PATCH
 		if (glyphidx) {
 			specs[numspecs].font = font->match;
 			specs[numspecs].glyph = glyphidx;
@@ -1408,6 +1433,11 @@ xmakeglyphfontspecs(XftGlyphFontSpec *specs, const Glyph *glyphs, int len, int x
 		xp += runewidth;
 		numspecs++;
 	}
+
+	#if LIGATURES_PATCH
+	/* Harfbuzz transformation for ligatures. */
+	hbtransform(specs, glyphs, len, x, y);
+	#endif // LIGATURES_PATCH
 
 	return numspecs;
 }
@@ -1551,8 +1581,17 @@ xdrawglyphfontspecs(const XftGlyphFontSpec *specs, Glyph base, int len, int x, i
 	r.width = width;
 	XftDrawSetClipRectangles(xw.draw, winx, winy, &r, 1);
 
+	#if BOXDRAW_PATCH
+	if (base.mode & ATTR_BOXDRAW) {
+		drawboxes(winx, winy, width / len, win.ch, fg, bg, specs, len);
+	} else {
+		/* Render the glyphs. */
+		XftDrawGlyphFontSpec(xw.draw, fg, specs, len);
+	}
+	#else
 	/* Render the glyphs. */
 	XftDrawGlyphFontSpec(xw.draw, fg, specs, len);
+	#endif // BOXDRAW_PATCH
 
 	/* Render underline and strikethrough. */
 	if (base.mode & ATTR_UNDERLINE) {
@@ -1580,14 +1619,24 @@ xdrawglyph(Glyph g, int x, int y)
 }
 
 void
+#if LIGATURES_PATCH
+xdrawcursor(int cx, int cy, Glyph g, int ox, int oy, Glyph og, Line line, int len)
+#else
 xdrawcursor(int cx, int cy, Glyph g, int ox, int oy, Glyph og)
+#endif // LIGATURES_PATCH
 {
 	Color drawcol;
 
 	/* remove the old cursor */
 	if (selected(ox, oy))
 		og.mode ^= ATTR_REVERSE;
+	#if LIGATURES_PATCH
+	/* Redraw the line where cursor was previously.
+	 * It will restore the ligatures broken by the cursor. */
+	xdrawline(line, 0, oy, len);
+	#else
 	xdrawglyph(og, ox, oy);
+	#endif // LIGATURES_PATCH
 
 	if (IS_SET(MODE_HIDE))
 		return;
@@ -1595,7 +1644,11 @@ xdrawcursor(int cx, int cy, Glyph g, int ox, int oy, Glyph og)
 	/*
 	 * Select the right color for the right mode.
 	 */
+	#if BOXDRAW_PATCH
+	g.mode &= ATTR_BOLD|ATTR_ITALIC|ATTR_UNDERLINE|ATTR_STRUCK|ATTR_WIDE|ATTR_BOXDRAW;
+	#else
 	g.mode &= ATTR_BOLD|ATTR_ITALIC|ATTR_UNDERLINE|ATTR_STRUCK|ATTR_WIDE;
+	#endif // BOXDRAW_PATCH
 
 	if (IS_SET(MODE_REVERSE)) {
 		g.mode |= ATTR_REVERSE;

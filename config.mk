@@ -12,13 +12,22 @@ X11LIB = /usr/X11R6/lib
 
 PKG_CONFIG = pkg-config
 
+# Uncomment the lines below for the ligatures patch / LIGATURES_PATCH
+LIGATURES_C = hb.c
+LIGATURES_H = hb.h
+LIGATURES_INC = `$(PKG_CONFIG) --cflags harfbuzz`
+LIGATURES_LIBS = `$(PKG_CONFIG) --libs harfbuzz`
+
 # includes and libs
 INCS = -I$(X11INC) \
        `$(PKG_CONFIG) --cflags fontconfig` \
-       `$(PKG_CONFIG) --cflags freetype2`
+       `$(PKG_CONFIG) --cflags freetype2` \
+       $(LIGATURES_INC)
+
 LIBS = -L$(X11LIB) -lm -lrt -lX11 -lutil -lXft \
        `$(PKG_CONFIG) --libs fontconfig` \
-       `$(PKG_CONFIG) --libs freetype2`
+       `$(PKG_CONFIG) --libs freetype2` \
+       $(LIGATURES_LIBS)
 
 # flags
 STCPPFLAGS = -DVERSION=\"$(VERSION)\" -D_XOPEN_SOURCE=600

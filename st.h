@@ -12,8 +12,14 @@
 #define DIVCEIL(n, d)		(((n) + ((d) - 1)) / (d))
 #define DEFAULT(a, b)		(a) = (a) ? (a) : (b)
 #define LIMIT(x, a, b)		(x) = (x) < (a) ? (a) : (x) > (b) ? (b) : (x)
+#if LIGATURES_PATCH
+#define ATTRCMP(a, b)		(((a).mode & (~ATTR_WRAP) & (~ATTR_LIGA)) != ((b).mode & (~ATTR_WRAP) & (~ATTR_LIGA)) || \
+				(a).fg != (b).fg || \
+				(a).bg != (b).bg)
+#else
 #define ATTRCMP(a, b)		((a).mode != (b).mode || (a).fg != (b).fg || \
 				(a).bg != (b).bg)
+#endif // LIGATURES_PATCH
 #define TIMEDIFF(t1, t2)	((t1.tv_sec-t2.tv_sec)*1000 + \
 				(t1.tv_nsec-t2.tv_nsec)/1E6)
 #define MODBIT(x, set, bit)	((set) ? ((x) |= (bit)) : ((x) &= ~(bit)))
@@ -34,6 +40,12 @@ enum glyph_attribute {
 	ATTR_WRAP       = 1 << 8,
 	ATTR_WIDE       = 1 << 9,
 	ATTR_WDUMMY     = 1 << 10,
+	#if BOXDRAW_PATCH
+	ATTR_BOXDRAW    = 1 << 11,
+	#endif // BOXDRAW_PATCH
+	#if LIGATURES_PATCH
+	ATTR_LIGA       = 1 << 12,
+	#endif // LIGATURES_PATCH
 	ATTR_BOLD_FAINT = ATTR_BOLD | ATTR_FAINT,
 };
 
@@ -111,6 +123,15 @@ size_t utf8encode(Rune, char *);
 void *xmalloc(size_t);
 void *xrealloc(void *, size_t);
 char *xstrdup(const char *);
+#if BOXDRAW_PATCH
+int isboxdraw(Rune);
+ushort boxdrawindex(const Glyph *);
+#ifdef XFT_VERSION
+/* only exposed to x.c, otherwise we'll need Xft.h for the types */
+void boxdraw_xinit(Display *, Colormap, XftDraw *, Visual *);
+void drawboxes(int, int, int, int, XftColor *, XftColor *, const XftGlyphFontSpec *, int);
+#endif // XFT_VERSION
+#endif // BOXDRAW_PATCH
 
 /* config.h globals */
 extern char *utmp;
@@ -124,3 +145,6 @@ extern char *termname;
 extern unsigned int tabspaces;
 extern unsigned int defaultfg;
 extern unsigned int defaultbg;
+#if BOXDRAW_PATCH
+extern const int boxdraw, boxdraw_bold, boxdraw_braille;
+#endif // BOXDRAW_PATCH

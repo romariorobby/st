@@ -1357,6 +1357,11 @@ tsetchar(Rune u, const Glyph *attr, int x, int y)
 	term.dirty[y] = 1;
 	term.line[y][x] = *attr;
 	term.line[y][x].u = u;
+
+	#if BOXDRAW_PATCH
+	if (isboxdraw(u))
+		term.line[y][x].mode |= ATTR_BOXDRAW;
+	#endif // BOXDRAW_PATCH
 }
 
 void
@@ -2771,8 +2776,14 @@ draw(void)
 	#if SCROLLBACK_PATCH
 	if (term.scr == 0)
 	#endif // SCROLLBACK_PATCH
+	#if LIGATURES_PATCH
+	xdrawcursor(cx, term.c.y, term.line[term.c.y][cx],
+			term.ocx, term.ocy, term.line[term.ocy][term.ocx],
+			term.line[term.ocy], term.col);
+	#else
 	xdrawcursor(cx, term.c.y, term.line[term.c.y][cx],
 			term.ocx, term.ocy, term.line[term.ocy][term.ocx]);
+	#endif // LIGATURES_PATCH
 	term.ocx = cx;
 	term.ocy = term.c.y;
 	xfinishdraw();

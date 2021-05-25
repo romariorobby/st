@@ -12,4 +12,5 @@
 - [X] Scrollback(mouse,mousealt)
 - [X] Universcroll
 - [X] Clipboard
-- [ ] Boxdraw
+- [X] Boxdraw
+- [X] Ligatures
