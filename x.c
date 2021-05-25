@@ -313,6 +313,9 @@ zoomabs(const Arg *arg)
 {
 	xunloadfonts();
 	xloadfonts(usedfont, arg->f);
+	#if FONT2_PATCH
+	xloadsparefonts();
+	#endif // FONT2_PATCH
 	cresize(0, 0);
 	redraw();
 	xhints();
@@ -1148,6 +1151,10 @@ xinit(int cols, int rows)
 	usedfont = (opt_font == NULL)? font : opt_font;
 	xloadfonts(usedfont, 0);
 
+	#if FONT2_PATCH
+	/* spare fonts */
+	xloadsparefonts();
+	#endif // FONT2_PATCH
 	/* colors */
 	xw.cmap = XDefaultColormap(xw.dpy, xw.scr);
 	xloadcols();

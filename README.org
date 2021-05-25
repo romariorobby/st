@@ -1,7 +1,7 @@
 * Patches
 - [X] Anysize
 - [X] Xresources
-- [ ] Font2
+- [X] Font2
 - [ ] Blinking Cursor
 - [X] Bold is not bright
 - [ ] Dynamic Cursor Color
