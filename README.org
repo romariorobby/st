@@ -3,7 +3,7 @@
 - [X] Xresources
 - [ ] Font2
 - [ ] Blinking Cursor
-- [ ] Bold is not bright
+- [X] Bold is not bright
 - [ ] Dynamic Cursor Color
 - [ ] Hide Cursor
 - [ ] New Term
