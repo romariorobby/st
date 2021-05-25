@@ -27,7 +27,11 @@ static int borderpx = 2;
 static char *shell = "/bin/sh";
 char *utmp = NULL;
 /* scroll program: to enable use a string like "scroll" */
+#if UNIVERSCROLL_PATCH && !SCROLLBACK_MOUSE_PATCH
+char *scroll = "scroll"
+#else
 char *scroll = NULL;
+#endif
 char *stty_args = "stty raw pass8 nl -echo -iexten -cstopb 38400";
 
 /* identification sequence returned in DA and DECID */
@@ -220,15 +224,46 @@ static uint forcemousemod = ShiftMask;
  * Internal mouse shortcuts.
  * Beware that overloading Button1 will disable the selection.
  */
+
+const unsigned int scrollincr = 2;
 static MouseShortcut mshortcuts[] = {
-	/* mask                 button   function        argument       release */
-	{ XK_ANY_MOD,           Button2, selpaste,       {.i = 0},      1 },
+	#if UNIVERSCROLL_PATCH
+	/* mask,                button,  function,       argument,      release,  alt */
+	#else
+	/* mask,                button,  function,       argument,      release */
+	#endif // UNIVERSCROLL_PATCH
+	#if SCROLLBACK_MOUSE_PATCH
+	{ ShiftMask,            Button4, kscrollup,      {.i = scrollincr} },
+	{ ShiftMask,            Button5, kscrolldown,    {.i = scrollincr} },
+	#elif UNIVERSCROLL_PATCH
+	{ XK_ANY_MOD,           Button4, ttysend,        {.s = "\033[5;2~"}, 0, -1 },
+	{ XK_ANY_MOD,           Button5, ttysend,        {.s = "\033[6;2~"}, 0, -1 },
+    #else
 	{ ShiftMask,            Button4, ttysend,        {.s = "\033[5;2~"} },
-	{ XK_ANY_MOD,           Button4, ttysend,        {.s = "\031"} },
 	{ ShiftMask,            Button5, ttysend,        {.s = "\033[6;2~"} },
+    #endif //SCROLLBACK_MOUSE_PATCH
+    #if SCROLLBACK_MOUSE_ALTSCREEN_PATCH
+	{ XK_NO_MOD,            Button4, kscrollup,      {.i = scrollincr} },
+	{ XK_NO_MOD,            Button5, kscrolldown,    {.i = scrollincr} },
+	#else
+	{ XK_ANY_MOD,           Button4, ttysend,        {.s = "\031"} },
 	{ XK_ANY_MOD,           Button5, ttysend,        {.s = "\005"} },
+    #endif // SCROLLBACK_MOUSE_PATCH
+	{ XK_ANY_MOD,           Button2, selpaste,       {.i = 0},      1 },
 };
 
+#if SCROLLBACK_MOUSE_ALTSCREEN_PATCH
+static MouseShortcut maltshortcuts[] = {
+	/* mask                 button   function        argument       release */
+	#if CLIPBOARD_PATCH
+	{ XK_ANY_MOD,           Button2, clippaste,      {.i = 0},      1 },
+	#else
+	{ XK_ANY_MOD,           Button2, selpaste,       {.i = 0},      1 },
+	#endif // CLIPBOARD_PATCH
+	{ XK_ANY_MOD,           Button4, ttysend,        {.s = "\031"} },
+	{ XK_ANY_MOD,           Button5, ttysend,        {.s = "\005"} },
+};
+#endif // SCROLLBACK_MOUSE_ALTSCREEN_PATCH
 #if EXTERNALPIPE_PATCH
 static char *openurlcmd[] = { "/bin/sh", "-c", "st-urlhandler -o", "externalpipe", NULL };
 static char *copyurlcmd[] = { "/bin/sh", "-c", "st-urlhandler -c", "externalpipe", NULL };
@@ -256,6 +291,18 @@ static Shortcut shortcuts[] = {
 	{ TERMMOD,              XK_L,           externalpipe,   {.v = openurlcmd } },
 	{ TERMMOD,              XK_Y,           externalpipe,   {.v = copyurlcmd } },
 	{ TERMMOD,              XK_O,           externalpipe,   {.v = copyoutput } },
+    #endif
+    #if SCROLLBACK_PATCH
+	{ ShiftMask,            XK_Page_Up,     kscrollup,      {.i = -1} },
+	{ ShiftMask,            XK_Page_Down,   kscrolldown,    {.i = -1} },
+	{ MODKEY,               XK_Page_Up,     kscrollup,      {.i = -1} },
+	{ MODKEY,               XK_Page_Down,   kscrolldown,    {.i = -1} },
+	{ MODKEY,               XK_k,           kscrollup,      {.i =  1} },
+	{ MODKEY,               XK_j,           kscrolldown,    {.i =  1} },
+	{ MODKEY,               XK_Up,          kscrollup,      {.i =  1} },
+	{ MODKEY,               XK_Down,        kscrolldown,    {.i =  1} },
+	{ MODKEY,               XK_u,           kscrollup,      {.i = -1} },
+	{ MODKEY,               XK_d,           kscrolldown,    {.i = -1} },
     #endif
 };
 

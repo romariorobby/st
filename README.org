@@ -9,5 +9,7 @@
 - [ ] New Term
 - [X] Externalpipe(in)
 - [ ] Vertcenter
-- [ ] Scrollback
+- [X] Scrollback(mouse,mousealt)
+- [X] Universcroll
+- [ ] Clipboard
 - [ ] Boxdraw
