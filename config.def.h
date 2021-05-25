@@ -229,9 +229,14 @@ static MouseShortcut mshortcuts[] = {
 	{ XK_ANY_MOD,           Button5, ttysend,        {.s = "\005"} },
 };
 
+#if EXTERNALPIPE_PATCH
+static char *openurlcmd[] = { "/bin/sh", "-c", "st-urlhandler -o", "externalpipe", NULL };
+static char *copyurlcmd[] = { "/bin/sh", "-c", "st-urlhandler -c", "externalpipe", NULL };
+static char *copyoutput[] = { "/bin/sh", "-c", "st-copyout", "externalpipe", NULL };
+#endif
 /* Internal keyboard shortcuts. */
 #define MODKEY Mod1Mask
-#define TERMMOD (ControlMask|ShiftMask)
+#define TERMMOD (Mod1Mask|ShiftMask)
 
 static Shortcut shortcuts[] = {
 	/* mask                 keysym          function        argument */
@@ -244,9 +249,14 @@ static Shortcut shortcuts[] = {
 	{ TERMMOD,              XK_Home,        zoomreset,      {.f =  0} },
 	{ TERMMOD,              XK_C,           clipcopy,       {.i =  0} },
 	{ TERMMOD,              XK_V,           clippaste,      {.i =  0} },
-	{ TERMMOD,              XK_Y,           selpaste,       {.i =  0} },
+	{ TERMMOD,              XK_P,           selpaste,       {.i =  0} },
 	{ ShiftMask,            XK_Insert,      selpaste,       {.i =  0} },
 	{ TERMMOD,              XK_Num_Lock,    numlock,        {.i =  0} },
+    #if EXTERNALPIPE_PATCH
+	{ TERMMOD,              XK_L,           externalpipe,   {.v = openurlcmd } },
+	{ TERMMOD,              XK_Y,           externalpipe,   {.v = copyurlcmd } },
+	{ TERMMOD,              XK_O,           externalpipe,   {.v = copyoutput } },
+    #endif
 };
 
 /*

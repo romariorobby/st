@@ -60,6 +60,7 @@ static void zoomabs(const Arg *);
 static void zoomreset(const Arg *);
 static void ttysend(const Arg *);
 
+#include "patches/st_include.h"
 #include "patches/x_include.h"
 
 /* config.h for applying patches and the configuration. */

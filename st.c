@@ -224,12 +224,17 @@ static CSIEscape csiescseq;
 static STREscape strescseq;
 static int iofd = 1;
 static int cmdfd;
+#if EXTERNALPIPEIN_PATCH && EXTERNALPIPE_PATCH
+static int csdfd;
+#endif // EXTERNALPIPEIN_PATCH
 static pid_t pid;
 
 static const uchar utfbyte[UTF_SIZ + 1] = {0x80,    0, 0xC0, 0xE0, 0xF0};
 static const uchar utfmask[UTF_SIZ + 1] = {0xC0, 0x80, 0xE0, 0xF0, 0xF8};
 static const Rune utfmin[UTF_SIZ + 1] = {       0,    0,  0x80,  0x800,  0x10000};
 static const Rune utfmax[UTF_SIZ + 1] = {0x10FFFF, 0x7F, 0x7FF, 0xFFFF, 0x10FFFF};
+
+#include "patches/st_include.h"
 
 ssize_t
 xwrite(int fd, const char *s, size_t len)
@@ -722,11 +727,30 @@ sigchld(int a)
 	int stat;
 	pid_t p;
 
+	#if EXTERNALPIPEIN_PATCH && EXTERNALPIPE_PATCH
+	if ((p = waitpid(-1, &stat, WNOHANG)) < 0)
+	#else
 	if ((p = waitpid(pid, &stat, WNOHANG)) < 0)
+	#endif // EXTERNALPIPEIN_PATCH
 		die("waiting for pid %hd failed: %s\n", pid, strerror(errno));
 
+    #if EXTERNALPIPE_PATCH
+	if (pid != p) {
+		if (p == 0 && wait(&stat) < 0)
+			die("wait: %s\n", strerror(errno));
+
+		/* reinstall sigchld handler */
+		signal(SIGCHLD, sigchld);
+		return;
+    }
+    #else
 	if (pid != p)
 		return;
+    #endif
+
+	#if EXTERNALPIPEIN_PATCH && EXTERNALPIPE_PATCH
+	close(csdfd);
+	#endif // EXTERNALPIPEIN_PATCH
 
 	if (WIFEXITED(stat) && WEXITSTATUS(stat))
 		die("child exited with status %d\n", WEXITSTATUS(stat));
@@ -763,6 +787,9 @@ int
 ttynew(const char *line, char *cmd, const char *out, char **args)
 {
 	int m, s;
+	#if EXTERNALPIPEIN_PATCH && EXTERNALPIPE_PATCH
+	struct sigaction sa;
+	#endif // EXTERNALPIPEIN_PATCH
 
 	if (out) {
 		term.mode |= MODE_PRINT;
@@ -814,7 +841,15 @@ ttynew(const char *line, char *cmd, const char *out, char **args)
 #endif
 		close(s);
 		cmdfd = m;
+		#if EXTERNALPIPEIN_PATCH && EXTERNALPIPE_PATCH
+		csdfd = s;
+		memset(&sa, 0, sizeof(sa));
+		sigemptyset(&sa.sa_mask);
+		sa.sa_handler = sigchld;
+		sigaction(SIGCHLD, &sa, NULL);
+		#else
 		signal(SIGCHLD, sigchld);
+        #endif
 		break;
 	}
 	return cmdfd;
@@ -2572,6 +2607,8 @@ drawregion(int x1, int y1, int x2, int y2)
 		xdrawline(term.line[y], x1, y, x2);
 	}
 }
+
+#include "patches/st_include.c"
 
 void
 draw(void)

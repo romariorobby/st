@@ -7,7 +7,7 @@
 - [ ] Dynamic Cursor Color
 - [ ] Hide Cursor
 - [ ] New Term
-- [ ] Externalpipe
+- [X] Externalpipe(in)
 - [ ] Vertcenter
 - [ ] Scrollback
 - [ ] Boxdraw

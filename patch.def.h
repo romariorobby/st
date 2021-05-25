@@ -1,5 +1,7 @@
 #define ANYSIZE_PATCH 1
 #define BOLD_NOT_BRIGHT_PATCH 1
+#define EXTERNALPIPE_PATCH 1
+#define EXTERNALPIPEIN_PATCH 1
 #define FONT2_PATCH 1
 #define XRESOURCES_PATCH 1
 /* This patch adds the ability to reload the Xresources config when a SIGUSR1 signal is received
