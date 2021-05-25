@@ -713,6 +713,10 @@ setsel(char *str, Time t)
 	XSetSelectionOwner(xw.dpy, XA_PRIMARY, xw.win, t);
 	if (XGetSelectionOwner(xw.dpy, XA_PRIMARY) != xw.win)
 		selclear();
+
+    #if CLIPBOARD_PATCH
+	clipcopy(NULL);
+    #endif // CLIPBOARD_PATCH
 }
 
 void

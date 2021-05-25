@@ -11,5 +11,5 @@
 - [ ] Vertcenter
 - [X] Scrollback(mouse,mousealt)
 - [X] Universcroll
-- [ ] Clipboard
+- [X] Clipboard
 - [ ] Boxdraw
