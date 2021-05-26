@@ -8,7 +8,7 @@
 - [ ] Hide Cursor
 - [ ] New Term
 - [X] Externalpipe(in)
-- [ ] Vertcenter
+- [X] Vertcenter
 - [X] Scrollback(mouse,mousealt)
 - [X] Universcroll
 - [X] Clipboard

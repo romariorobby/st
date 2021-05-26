@@ -93,6 +93,9 @@ typedef struct {
 	#if ANYSIZE_PATCH
 	int hborderpx, vborderpx;
 	#endif // ANYSIZE_PATCH
+	#if VERTCENTER_PATCH
+	int cyo; /* char y offset */
+	#endif // VERTCENTER_PATCH
 	int ch; /* char height */
 	int cw; /* char width  */
 	int mode; /* window state/mode flags */
@@ -1065,6 +1068,9 @@ xloadfonts(const char *fontstr, double fontsize)
 	/* Setting character width and height. */
 	win.cw = ceilf(dc.font.width * cwscale);
 	win.ch = ceilf(dc.font.height * chscale);
+	#if VERTCENTER_PATCH
+	win.cyo = ceilf(dc.font.height * (chscale - 1) / 2);
+	#endif // VERTCENTER_PATCH
 
 	FcPatternDel(pattern, FC_SLANT);
 	FcPatternAddInteger(pattern, FC_SLANT, FC_SLANT_ITALIC);
@@ -1310,7 +1316,12 @@ xmakeglyphfontspecs(XftGlyphFontSpec *specs, const Glyph *glyphs, int len, int x
 	FcCharSet *fccharset;
 	int i, f, numspecs = 0;
 
-	for (i = 0, xp = winx, yp = winy + font->ascent; i < len; ++i) {
+    #if VERTCENTER_PATCH
+	for (i = 0, xp = winx, yp = winy + font->ascent + win.cyo; i < len; ++i)
+    #else
+	for (i = 0, xp = winx, yp = winy + font->ascent; i < len; ++i)
+    #endif //VERTCENTER_PATCH
+    {
 		/* Fetch rune and mode for current glyph. */
 		rune = glyphs[i].u;
 		mode = glyphs[i].mode;
@@ -1339,7 +1350,11 @@ xmakeglyphfontspecs(XftGlyphFontSpec *specs, const Glyph *glyphs, int len, int x
 				font = &dc.bfont;
 				frcflags = FRC_BOLD;
 			}
+			#if VERTCENTER_PATCH
+			yp = winy + font->ascent + win.cyo;
+			#else
 			yp = winy + font->ascent;
+			#endif //VERTCENTER_PATCH
 		}
 
 		#if BOXDRAW_PATCH
@@ -1598,13 +1613,23 @@ xdrawglyphfontspecs(const XftGlyphFontSpec *specs, Glyph base, int len, int x, i
 
 	/* Render underline and strikethrough. */
 	if (base.mode & ATTR_UNDERLINE) {
+		#if VERTCENTER_PATCH
+		XftDrawRect(xw.draw, fg, winx, winy + win.cyo + dc.font.ascent + 1,
+				width, 1);
+		#else
 		XftDrawRect(xw.draw, fg, winx, winy + dc.font.ascent + 1,
 				width, 1);
+		#endif // VERTCENTER_PATCH
 	}
 
 	if (base.mode & ATTR_STRUCK) {
+		#if VERTCENTER_PATCH
+		XftDrawRect(xw.draw, fg, winx, winy + win.cyo + 2 * dc.font.ascent / 3,
+				width, 1);
+		#else
 		XftDrawRect(xw.draw, fg, winx, winy + 2 * dc.font.ascent / 3,
 				width, 1);
+		#endif // VERTCENTER_PATCH
 	}
 
 	/* Reset clip to none. */
