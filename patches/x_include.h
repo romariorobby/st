@@ -7,3 +7,6 @@
 #if BOXDRAW_PATCH
 #include "boxdraw.h"
 #endif
+#if CYCLEFONTS_PATCH
+#include "cyclefonts.h"
+#endif

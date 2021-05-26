@@ -5,7 +5,17 @@
  *
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
+
+#if CYCLEFONTS_PATCH
+static char *fonts[] = {
+  "mono:pixelsize=15:antialias=true:autohint=true",
+  "FiraCode Nerd Font:pixelsize=15:antialias=true:autohint=true",
+  "Hack Nerd Font:pixelsize=15:antialias=true:autohint=true"
+};
+static int fonts_current = 0;
+#else
 static char *font = "mono:pixelsize=12:antialias=true:autohint=true";
+#endif // CYCLEFONTS_PATCH
 #if FONT2_PATCH
 /* Spare fonts */
 static char *font2[] = {
@@ -215,7 +225,11 @@ static unsigned int defaultattr = 11;
  * Xresources preferences to load at startup
  */
 ResourcePref resources[] = {
+        #if CYCLEFONTS_PATCH // FIXME: idk if this would works?
+		{ "fonts",        STRING,  &fonts },
+        #else
 		{ "font",         STRING,  &font },
+        #endif
 		{ "color0",       STRING,  &colorname[0] },
 		{ "color1",       STRING,  &colorname[1] },
 		{ "color2",       STRING,  &colorname[2] },
@@ -351,6 +365,9 @@ static Shortcut shortcuts[] = {
 	{ MODKEY,               XK_Return,      newterm,        {.i =  0} },
 	{ TERMMOD,              XK_N,           newterm,        {.i =  0} },
 	#endif // NEWTERM_PATCH
+    #if CYCLEFONTS_PATCH
+	{ TERMMOD,              XK_S,           cyclefonts,     {}        },
+    #endif // CYCLEFONTS_PATCH
 };
 
 /*

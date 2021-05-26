@@ -1207,8 +1207,13 @@ xinit(int cols, int rows)
 	if (!FcInit())
 		die("could not init fontconfig.\n");
 
+    #if CYCLEFONTS_PATCH
+	usedfont = fonts[fonts_current];
+	xloadfonts(fonts[fonts_current], 0);
+    #else
 	usedfont = (opt_font == NULL)? font : opt_font;
 	xloadfonts(usedfont, 0);
+    #endif // CYCLEFONTS_PATCH
 
 	#if FONT2_PATCH
 	/* spare fonts */
