@@ -4,7 +4,7 @@
 - [X] Font2
 - [X] Blinking Cursor
 - [X] Bold is not bright
-- [ ] Dynamic Cursor Color
+- [X] Dynamic Cursor Color
 - [ ] Hide Cursor
 - [ ] New Term
 - [X] Externalpipe(in)
