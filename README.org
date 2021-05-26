@@ -6,7 +6,7 @@
 - [X] Bold is not bright
 - [X] Dynamic Cursor Color
 - [ ] Hide Cursor
-- [ ] New Term
+- [X] New Term
 - [X] Externalpipe(in)
 - [X] Vertcenter
 - [X] Scrollback(mouse,mousealt)

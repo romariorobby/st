@@ -347,6 +347,10 @@ static Shortcut shortcuts[] = {
 	{ MODKEY,               XK_u,           kscrollup,      {.i = -1} },
 	{ MODKEY,               XK_d,           kscrolldown,    {.i = -1} },
     #endif
+	#if NEWTERM_PATCH
+	{ MODKEY,               XK_Return,      newterm,        {.i =  0} },
+	{ TERMMOD,              XK_N,           newterm,        {.i =  0} },
+	#endif // NEWTERM_PATCH
 };
 
 /*

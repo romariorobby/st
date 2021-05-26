@@ -7,3 +7,6 @@
 #if UNIVERSCROLL_PATCH || SCROLLBACK_MOUSE_ALTSCREEN_PATCH
 #include "universcroll.h"
 #endif
+#if NEWTERM_PATCH
+#include "newterm.h"
+#endif
