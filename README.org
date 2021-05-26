@@ -5,7 +5,7 @@
 - [X] Blinking Cursor
 - [X] Bold is not bright
 - [X] Dynamic Cursor Color
-- [ ] Hide Cursor
+- [X] Hide Cursor
 - [X] New Term
 - [X] Externalpipe(in)
 - [X] Vertcenter

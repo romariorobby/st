@@ -118,6 +118,13 @@ typedef struct {
 	Draw draw;
 	Visual *vis;
 	XSetWindowAttributes attrs;
+	#if HIDECURSOR_PATCH
+	/* Here, we use the term *pointer* to differentiate the cursor
+	 * one sees when hovering the mouse over the terminal from, e.g.,
+	 * a green rectangle where text would be entered. */
+	Cursor vpointer, bpointer; /* visible and hidden pointers */
+	int pointerisvisible;
+	#endif // HIDECURSOR_PATCH
 	int scr;
 	int isfixed; /* is fixed geometry? */
 	int l, t; /* left and top offset */
@@ -751,6 +758,14 @@ brelease(XEvent *e)
 void
 bmotion(XEvent *e)
 {
+    #if HIDECURSOR_PATCH
+	if (!xw.pointerisvisible) {
+		XDefineCursor(xw.dpy, xw.win, xw.vpointer);
+		xw.pointerisvisible = 1;
+		if (!IS_SET(MODE_MOUSEMANY))
+			xsetpointermotion(0);
+	}
+    #endif
 	if (IS_SET(MODE_MOUSE) && !(e->xbutton.state & forcemousemod)) {
 		mousereport(e);
 		return;
@@ -1174,7 +1189,11 @@ void
 xinit(int cols, int rows)
 {
 	XGCValues gcvalues;
+    #if HIDECURSOR_PATCH
+	Pixmap blankpm;
+    #else
 	Cursor cursor;
+    #endif // !HIDECURSOR_PATCH
 	Window parent;
 	pid_t thispid = getpid();
 	XColor xmousefg, xmousebg;
@@ -1250,8 +1269,14 @@ xinit(int cols, int rows)
 	}
 
 	/* white cursor, black outline */
+    #if HIDECURSOR_PATCH 
+	xw.pointerisvisible = 1;
+	xw.vpointer = XCreateFontCursor(xw.dpy, mouseshape);
+	XDefineCursor(xw.dpy, xw.win, xw.vpointer);
+    #else 
 	cursor = XCreateFontCursor(xw.dpy, mouseshape);
 	XDefineCursor(xw.dpy, xw.win, cursor);
+    #endif 
 
 	if (XParseColor(xw.dpy, xw.cmap, colorname[mousefg], &xmousefg) == 0) {
 		xmousefg.red   = 0xffff;
@@ -1264,8 +1289,14 @@ xinit(int cols, int rows)
 		xmousebg.green = 0x0000;
 		xmousebg.blue  = 0x0000;
 	}
-
+    #if HIDECURSOR_PATCH
+	XRecolorCursor(xw.dpy, xw.vpointer, &xmousefg, &xmousebg);
+	blankpm = XCreateBitmapFromData(xw.dpy, xw.win, &(char){0}, 1, 1);
+	xw.bpointer = XCreatePixmapCursor(xw.dpy, blankpm, blankpm,
+					  &xmousefg, &xmousebg, 0, 0);
+    #else
 	XRecolorCursor(xw.dpy, cursor, &xmousefg, &xmousebg);
+    #endif // HIDECURSOR_PATCH
 
 	xw.xembed = XInternAtom(xw.dpy, "_XEMBED", False);
 	xw.wmdeletewin = XInternAtom(xw.dpy, "WM_DELETE_WINDOW", False);
@@ -1943,6 +1974,10 @@ unmap(XEvent *ev)
 void
 xsetpointermotion(int set)
 {
+    #if HIDECURSOR_PATCH
+	if (!set && !xw.pointerisvisible)
+		return;
+    #endif
 	MODBIT(xw.attrs.event_mask, set, PointerMotionMask);
 	XChangeWindowAttributes(xw.dpy, xw.win, CWEventMask, &xw.attrs);
 }
@@ -2070,6 +2105,14 @@ kpress(XEvent *ev)
 	Rune c;
 	Status status;
 	Shortcut *bp;
+
+    #if HIDECURSOR_PATCH
+	if (xw.pointerisvisible) {
+		XDefineCursor(xw.dpy, xw.win, xw.bpointer);
+		xsetpointermotion(1);
+		xw.pointerisvisible = 0;
+	}
+    #endif // HIDECURSOR_PATCH
 
 	if (IS_SET(MODE_KBDLOCK))
 		return;

@@ -15,6 +15,13 @@
 #define DYNAMIC_CURSOR_COLOR_PATCH 1
 #define VERTCENTER_PATCH 1
 
+/*
+ * Hide the X cursor whenever a key is pressed and show it back when the mouse is moved in
+ * the terminal window.
+ * Alternatively use : xbanish or unclutter
+ */
+#define HIDECURSOR_PATCH 0
+
 /* This patch adds the ability to reload the Xresources config when a SIGUSR1 signal is received
  * e.g.: killall -USR1 st
  * Depends on the XRESOURCES_PATCH.
