@@ -11,6 +11,7 @@
 #define CLIPBOARD_PATCH 0
 #define BOXDRAW_PATCH 1
 #define LIGATURES_PATCH 1
+#define BLINKING_CURSOR_PATCH 1
 
 /* This patch adds the ability to reload the Xresources config when a SIGUSR1 signal is received
  * e.g.: killall -USR1 st

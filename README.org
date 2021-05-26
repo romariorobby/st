@@ -2,7 +2,7 @@
 - [X] Anysize
 - [X] Xresources
 - [X] Font2
-- [ ] Blinking Cursor
+- [X] Blinking Cursor
 - [X] Bold is not bright
 - [ ] Dynamic Cursor Color
 - [ ] Hide Cursor
